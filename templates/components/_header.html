@@ -29,6 +29,19 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'about' %}">About</a>
           </li>
+
+          {%if not user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Ro'yhatdan o'tish</a>
+          </li>
+
+
+          <li><a class="nav-link" href="{%url 'login'%}">Kirish</a></li>
+          {%endif%}
+
+          <li><a class="nav-link" href="{%url 'logout'%}">Chiqish</a></li>
+
+
           {% if request.user.is_staff %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'add_movie' %}">Add_Movie</a>

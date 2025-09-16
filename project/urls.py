@@ -22,6 +22,7 @@ from . import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('moviesite.urls')),
+    path('auth', include('user_auth.urls')),
 ]
 
 if settings.DEBUG:

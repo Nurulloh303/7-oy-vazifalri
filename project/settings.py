@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'moviesite.apps.MoviesiteConfig',
+    'user_auth.apps.UserAuthConfig',
 ]
 
 MIDDLEWARE = [
