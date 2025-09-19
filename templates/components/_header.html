@@ -30,19 +30,26 @@
             <a class="nav-link" href="{% url 'about' %}">About</a>
           </li>
 
-          {%if not user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">Ro'yhatdan o'tish</a>
-          </li>
 
-
-          <li><a class="nav-link" href="{%url 'login'%}">Kirish</a></li>
-          {%endif%}
-
+          {%if  user.is_authenticated %}
           <li><a class="nav-link" href="{%url 'logout'%}">Chiqish</a></li>
 
 
-          {% if request.user.is_staff %}
+          <li><a class="nav-link" href="{%url 'profile' user.username %}">Profile</a></li>
+
+          {%else%}
+          <li><a class="nav-link" href="{%url 'register' %}">Profile</a></li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Ro'yhatdan o'tish</a>
+          </li>
+          <li><a class="nav-link" href="{%url 'login'%}">Kirish</a></li>
+
+
+          {%endif%}
+
+
+          {% if parms.moviesite.add_movie %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'add_movie' %}">Add_Movie</a>
           </li>

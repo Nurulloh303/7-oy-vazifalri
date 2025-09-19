@@ -31,12 +31,12 @@ def user_register(request):
             return redirect("login")
     else:
         form = RegisterationFrom()
-        context = {
+    context = {
             'form': form,
             "title": "Registeration"
         }
 
-        return render(request, 'auth/register.html', context)
+    return render(request, 'auth/register.html', context)
 
 
 from django.contrib.auth import logout
