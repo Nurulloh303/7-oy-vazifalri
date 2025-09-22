@@ -5,23 +5,30 @@ from .models import Genre, Movie, Profile
 from .forms import MovieForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import permission_required, login_required
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.views import View
 
 
-# Create your views here.
 
-def main(request: HttpRequest):
-    messages.info(request, "Xush kelibsiz! Asosiy sahifasidasiz.")
-    genres = Genre.objects.all()
-    movies = Movie.objects.filter(published=True)
 
-    context = {
-        'genres': genres,
-        'movies': movies,
-        'title': 'main',
+class HomeView(ListView):
+    template_name = 'moviesite/main.html'
+    context_object_name = 'movies'
+    extra_context = {
+        'title': 'Home',
+        'genres': Genre.objects.all(),
     }
 
-    return render(request, 'moviesite/main.html', context)
+    def get_queryset(self):
+        return Movie.objects.filter(published=True)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        context['genres'] = Genre.objects.all()
+        return context
+
+
+
 
 def about(request: HttpRequest):
     context = {
@@ -30,32 +37,27 @@ def about(request: HttpRequest):
 
     return render(request, 'moviesite/about.html', context)
 
-def by_genre(request: HttpRequest, genre_id):
-    movies = Movie.objects.filter(genre_id=genre_id, published=True)
-    genres = Genre.objects.all()
-    genre = get_object_or_404(Genre, pk=genre_id)
+class MovieByGenres(HomeView):
+    def get_queryset(self):
+        queryset = Movie.objects.filter(published=True, genre_id=self.kwargs['genre_id'])
+        return queryset
 
-    context = {
-        'movies': movies,
-        'genres': genres,
-        'title': genre.type,
-    }
 
-    return render(request, 'moviesite/main.html', context)
 
-@login_required(login_url='/login/')
-def by_movie(request: HttpRequest, movie_id):
-    movie = get_object_or_404(Movie, pk=movie_id, published=True)
 
-    movie.views += 1
-    movie.save()
-
-    context = {
-        'movie': movie,
-        'title': movie.title,
-    }
-
-    return render(request, 'moviesite/movie.html', context)
+# #
+# def by_movie(request: HttpRequest, movie_id):
+#     movie = get_object_or_404(Movie, pk=movie_id, published=True)
+#
+#     movie.views += 1
+#     movie.save()
+#
+#     context = {----
+#         'movie': movie,
+#         'title': movie.title,
+#     }
+#
+#     return render(request, 'moviesite/movie.html', context)
 
 # POST
 @permission_required('moviesite.add_movie', raise_exception=True)
@@ -153,14 +155,29 @@ class MainView(View):
         return render(request, 'moviesite/main.html', context)
 
 
-def movie_detail(request: HttpRequest, movie_id: int):
-    genres  = Genre.objects.all()
-    movie = get_object_or_404(Movie, pk=movie_id)
+# def movie_detail(request: HttpRequest, movie_id: int):
+#     genres  = Genre.objects.all()
+#     movie = get_object_or_404(Movie, pk=movie_id)
+#
+#     context = {
+#         'genres': genres,
+#         'movie': movie,
+#         'title': str(movie.title).title(),
+#     }
+#
+#     return render(request, 'moviesite/movie_detail.html', context)
 
-    context = {
-        'genres': genres,
-        'movie': movie,
-        'title': str(movie.title).title(),
-    }
+class ByMovie(DetailView):
+    model = Movie
+    pk_url_kwarg = 'movie_id'
+    template_name = "moviesite/movie.html"
+    context_object_name = "movie"   # << muhim
 
-    return render(request, 'moviesite/movie_detail.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        movie = self.get_object()
+        movie.views += 1
+        movie.save()
+        context['title'] = movie.title
+        context['genres'] = Genre.objects.all()
+        return context
