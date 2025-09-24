@@ -53,7 +53,7 @@
               {% endif %}
             </a>
             <div class="card-body">
-              <a href="{%url 'movie_detail' movie.id%}"><h5 class="card-title">{{ movie.title }}</h5></a>
+              <a href="{%url 'by_movie' movie.id%}"><h5 class="card-title">{{ movie.title }}</h5></a>
               <p class="card-text">
                 <b>Director: {{ movie.director }}</b>
                 {{ movie.description|truncatewords:10 }}

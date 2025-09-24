@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import permission_required, login_required
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.views import View
+from django.urls import reverse_lazy
 
 
 
@@ -60,73 +61,49 @@ class MovieByGenres(HomeView):
 #     return render(request, 'moviesite/movie.html', context)
 
 # POST
-@permission_required('moviesite.add_movie', raise_exception=True)
-def add_movie(request: HttpRequest):
-    if request.user.is_staff:
-        if request.method == 'POST':
-            form = MovieForm(request.POST, files=request.FILES)
-            if form.is_valid():
-                movie = form.save()
-                messages.success(request, "Maqola muvaffaqiyatli qo'shildi!")
-                return redirect("by_movie", movie_id=movie.pk)
-            else:
-                messages.error(request, "Ma'lumotlar qo'shishda xatolik yuz berdi!")
-        else:
-            form = MovieForm()
+# ==========================
+# Movie CRUD (Class-based Views)
+# ==========================
+class MovieCreateView(CreateView):
+    model = Movie
+    form_class = MovieForm
+    template_name = "moviesite/add_movie.html"
+    success_url = reverse_lazy("main")
 
-        context = {
-            "form": form,
-            "title": "Film qo'shish"
-        }
-        return render(request, 'moviesite/add_movie.html', context)
-    else:
-        messages.error(request, "Sizda ruxsat yo‘q!")
-        return render(request, '404.html')
-    
-# UPDATE
-@permission_required("moviesite.change_moviesite")
-def update_movie(request: HttpRequest, movie_id: int):
-    if request.user.is_staff:
-        movie = get_object_or_404(Movie, pk=movie_id)
+    def form_valid(self, form):
+        messages.success(self.request, "Maqola muvaffaqiyatli qo'shildi!")
+        return super().form_valid(form)
 
-        if request.method == 'POST':
-            form = MovieForm(request.POST, files=request.FILES, instance=movie)
-            if form.is_valid():
-                movie = form.save()
-                messages.success(request, "Film muvaffaqiyatli yangilandi!")
-                return redirect("by_movie", movie_id=movie.pk)
-            else:
-                messages.error(request, "Ma'lumotlar qo'shishda xatolik yuz berdi!.")
-        else:
-            form = MovieForm(instance=movie)
+    def form_invalid(self, form):
+        messages.error(self.request, "Ma'lumotlar qo'shishda xatolik yuz berdi!")
+        return super().form_invalid(form)
 
-        context = {
-            "form": form,
-            "title": "Filmni yangilash"
-        }
-        return render(request, 'moviesite/update_movie.html', context)
-    else:
-        messages.error(request, "Sizda ruxsat yo‘q!")
-        return render(request, '404.html')
-    
-# DELETE
-@permission_required("moviesite.delete_moviesite")
-def delete_movie(request: HttpRequest, movie_id):
-    if request.user.is_staff:
-        movie = get_object_or_404(Movie, pk=movie_id)
-        messages.warning(request, "Filmni o'chirmoqchimisiz?")
-        if request.method == 'POST':
-            movie.delete()
-            messages.success(request, "Film muvaffaqiyatli o'chirildi!")
-            return redirect("main")
-        context = {
-            'movie': movie,
-            'title': "Filmni o'chirish"
-        }
-        return render(request, 'moviesite/delete_movie.html', context)
-    else:
-        messages.error(request, "Sizda ruxsat yo‘q!")
-        return render(request, '404.html')
+
+class MovieUpdateView(UpdateView):
+    model = Movie
+    form_class = MovieForm
+    template_name = "moviesite/update_movie.html"  # update_movie funksiyasidagi template
+    pk_url_kwarg = "movie_id"
+    success_url = reverse_lazy("main")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Film muvaffaqiyatli yangilandi!")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Ma'lumotlarni yangilashda xatolik yuz berdi!")
+        return super().form_invalid(form)
+
+
+class MovieDeleteView(DeleteView):
+    model = Movie
+    template_name = "moviesite/delete_movie.html"  # delete_movie funksiyasidagi template
+    pk_url_kwarg = "movie_id"
+    success_url = reverse_lazy("main")
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Film muvaffaqiyatli o'chirildi!")
+        return super().delete(request, *args, **kwargs)
 
 
 login_required(login_url='/login/')
